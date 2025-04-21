@@ -22,9 +22,12 @@ void DriverControl::update(CONTROLERS::CONTROL *control)
         DriverMotor::setDuty(control->motor, 0);
     }
     else {
-        // Aniadir filtros de kalman
-        float speed_Rad = DriverEncoder::getVelocity(control->encoder) * PI * 2.0f;
-
+        // Filtro de kalman
+        DriverEncoder::getVelocity(control->encoder);
+        float speed_rps = DriverControl::filter_kalman(control);
+        float speed_Rad = speed_rps * PI * 2.0f;
+        
+        // Control
         float error = control->set_point - speed_Rad;
         float output = control->KP * error + control->KI * control->previous_error + control->previous_output;
         
@@ -43,19 +46,13 @@ void DriverControl::update(CONTROLERS::CONTROL *control)
     }
 }
 
-float DriverControl::filter_kalman(float speed)
+float DriverControl::filter_kalman(CONTROLERS::CONTROL *control)
 {
-    float x_est = 0.0;      // Estimación inicial de velocidad
-    float P_est = 1.0;      // Covarianza inicial
-    const float Q = 0.02;   // Ruido del proceso
-    const float R = 0.05;   // Ruido de medición
-    
-    float x_pred = x_est;  // Predicción de la velocidad
-    float P_pred = P_est + Q;  // Predicción de la covarianza
-    float K = P_pred / (P_pred + R);  // Cálculo de la ganancia de Kalman
-    x_est = x_pred + K * (speed - x_pred);  // Actualización de la estimación
-    P_est = (1 - K) * P_pred;  // Actualización de la covarianza
-    speed = x_est;  // Guardar la velocidad filtrada
-    return speed;
+    float x_pred = control->x_est;  // Predicción de la velocidad
+    float P_pred = control->p_est + CONFIG::Q;  // Predicción de la covarianza
+    float K = P_pred / (P_pred + CONFIG::R);  // Cálculo de la ganancia de Kalman
+    control->x_est = x_pred + K * (control->encoder->speed - x_pred);  // Actualización de la estimación
+    control->p_est = (1 - K) * P_pred;  // Actualización de la covarianza
+    return control->x_est;
 }
 

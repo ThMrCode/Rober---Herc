@@ -16,14 +16,12 @@ unsigned long previousMillis = 0;
 const long interval = 150;
 
 namespace GamepadManager {
-
     ControllerPtr myControllers[MAX_CONTROLLERS] = {nullptr};
 }
 
 void GamepadManager::start() {
   BP32.setup(&onConnectedController, &onDisconnectedController);
   BP32.forgetBluetoothKeys();
-  BP32.enableVirtualDevice(false);
   servo1.attach(23); 
   servo2.attach(22); 
   servo3.attach(21); 
@@ -33,43 +31,20 @@ void GamepadManager::start() {
 void GamepadManager::onConnectedController(ControllerPtr ctl) {
   for (int i = 0; i < MAX_CONTROLLERS; i++) {
     if (myControllers[i] == nullptr) {
-      Serial.printf("Control Conectado....\n");
       ControllerProperties properties = ctl->getProperties();
-      Serial.printf("Model: %s\n", 
-      ctl->getModelName().c_str());
       myControllers[i] = ctl;
       return;
     }
   }
-  Serial.println("Solo permitido 1 control\n");
 }
 
 void GamepadManager::onDisconnectedController(ControllerPtr ctl) {
   for (int i = 0; i < MAX_CONTROLLERS; i++) {
     if (myControllers[i] == ctl) {
-      Serial.printf("Control desconectado....\n");
       myControllers[i] = nullptr;
       return;
     }
   }
-  Serial.println("Control no encontrado...\n");
-}
-
-// Lectura de la flechas en la parte izquierda del mando
-void GamepadManager::processFlechas(ControllerPtr ctl){
-  //int Direccion= ctl->dpad();
-  // switch (ctl->dpad() % 11) {
-  //   case 0:
-  //   break;
-
-  //   case 1:
-  //     Serial.printf("Arriba\n");
-  //   break;
-
-  //   case 2:
-  //     Serial.printf("Abajo\n");
-  //   break;
-  // }
 }
 
 // Lectura joystick izquierdo del mando
@@ -176,7 +151,7 @@ void GamepadManager::processBotones(ControllerPtr ctl){
     servo3.write(90 + alfa_3);
     servo4.write(90 - alfa_4);
   }
-  else if ((ctl->a() == FALSE) && ((ctl->axisX() > -100) && (ctl->axisX() < 100))) {
+  else if ((ctl->a() == false) && ((ctl->axisX() > -100) && (ctl->axisX() < 100))) {
     if (ctl->buttons() == 128){
       velocidad = ((ctl->throttle())*775)/1020;
     }
@@ -216,17 +191,11 @@ void GamepadManager::processGatillos(ControllerPtr ctl) {
 
 void GamepadManager::processControllers() {
   for (auto myController : myControllers) {
-    if (myController && myController->isConnected() && myController->hasData()) {
-      if (myController->isGamepad()) {
-        //processGamepad(myController)
-        processFlechas(myController);
+    if (myController && myController->isConnected() && myController->isGamepad()) {
         processJoystick_I(myController);
         processJoystick_D(myController);
         processBotones(myController);
         processGatillos(myController);
-      } else {
-        Serial.println("Control no reconocido.");
-      }
     }
   }
 }
@@ -236,14 +205,7 @@ void GamepadManager::update() {
   
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
-    if (BP32.update()) {
-      processControllers();
-    }
+    BP32.update();
+    processControllers();
   }
 }
-// void GamepadManager::update() {
-//   if (BP32.update()) {
-//     processControllers();
-//   }
-//   delay(150);
-// }

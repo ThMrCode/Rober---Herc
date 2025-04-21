@@ -13,7 +13,6 @@ namespace GamepadManager {
     void onDisconnectedController(ControllerPtr ctl);
 
     // Procesamiento del gamepad
-    void processFlechas(ControllerPtr ctl);
     void processJoystick_I(ControllerPtr ctl);
     void processJoystick_D(ControllerPtr ctl);
     void processBotones(ControllerPtr ctl);

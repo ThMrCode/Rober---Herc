@@ -9,12 +9,12 @@ void SerialControl::start()
     Serial.begin(CONFIG::SERIAL_RATE);
 
     // Estado Inicial de los motores
-    //DriverMotor::setDuty(&DriverMotor::MOTORS::FORWARD, 0);
-    //DriverEncoder::ENCODERS::FORWARD.MODE_FORWARD = true;
-    //DriverControl::CONTROLERS::FORWARD.set_point = 0.0f;
-    //DriverMotor::setDuty(&DriverMotor::MOTORS::MIDDLE, 0);
-    //DriverEncoder::ENCODERS::MIDDLE.MODE_FORWARD = true;
-    //DriverControl::CONTROLERS::MIDDLE.set_point = 0.0f;
+    DriverMotor::setDuty(&DriverMotor::MOTORS::FORWARD, 0);
+    DriverEncoder::ENCODERS::FORWARD.MODE_FORWARD = true;
+    DriverControl::CONTROLERS::FORWARD.set_point = 0.0f;
+    DriverMotor::setDuty(&DriverMotor::MOTORS::MIDDLE, 0);
+    DriverEncoder::ENCODERS::MIDDLE.MODE_FORWARD = true;
+    DriverControl::CONTROLERS::MIDDLE.set_point = 0.0f;
     DriverMotor::setDuty(&DriverMotor::MOTORS::BACKWARD, 0);
     DriverEncoder::ENCODERS::BACKWARD.MODE_FORWARD = true;
     DriverControl::CONTROLERS::BACKWARD.set_point = 0.0f;
@@ -35,8 +35,6 @@ void SerialControl::loop()
     DriverControl::update(&DriverControl::CONTROLERS::FORWARD);
     DriverControl::update(&DriverControl::CONTROLERS::MIDDLE);
     DriverControl::update(&DriverControl::CONTROLERS::BACKWARD);
-    Serial.println(DriverEncoder::ENCODERS::BACKWARD.speed);
-    Serial.println("-------------------------------------");
 }
 
 bool SerialControl::waitSerial(float* speed_forward, float* speed_middle, float* speed_backward)
